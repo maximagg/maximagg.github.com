@@ -1,16 +1,107 @@
 <?xml version="1.0" encoding="utf-8"?>
 <feed xmlns="http://www.w3.org/2005/Atom">
 
-  <title><![CDATA[My Octopress Blog]]></title>
+  <title><![CDATA[西瓜熊]]></title>
   <link href="http://maximagg.github.com/atom.xml" rel="self"/>
   <link href="http://maximagg.github.com/"/>
-  <updated>2012-12-29T16:43:41+00:00</updated>
+  <updated>2012-12-29T21:05:34+00:00</updated>
   <id>http://maximagg.github.com/</id>
   <author>
-    <name><![CDATA[Your Name]]></name>
+    <name><![CDATA[西瓜熊]]></name>
     
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[应用序和正则序]]></title>
+    <link href="http://maximagg.github.com/blog/2012/12/29/ying-yong-xu-he-zheng-ze-xu/"/>
+    <updated>2012-12-29T17:27:00+00:00</updated>
+    <id>http://maximagg.github.com/blog/2012/12/29/ying-yong-xu-he-zheng-ze-xu</id>
+    <content type="html"><![CDATA[<p>应用序和正则序主要是解释顺序上面的区别在于:<br/>
+应用序首先对参数求值后再代换,
+而正则序在代换完全后再归约求值.</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+</pre></td><td class='code'><pre><code class='scheme'><span class='line'><span class="c1">;; Scheme code</span>
+</span><span class='line'><span class="p">(</span><span class="k">define </span><span class="p">(</span><span class="nf">p</span><span class="p">)</span> <span class="p">(</span><span class="nf">p</span><span class="p">))</span>
+</span><span class='line'><span class="p">(</span><span class="k">define </span><span class="p">(</span><span class="nf">test</span> <span class="nv">x</span> <span class="nv">y</span><span class="p">)</span>
+</span><span class='line'>  <span class="p">(</span><span class="k">if </span><span class="p">(</span><span class="nb">= </span><span class="nv">x</span> <span class="mi">0</span><span class="p">)</span>
+</span><span class='line'>      <span class="mi">0</span>
+</span><span class='line'>      <span class="nv">y</span><span class="p">))</span>
+</span><span class='line'>
+</span><span class='line'><span class="p">(</span><span class="nf">test</span> <span class="mi">0</span> <span class="p">(</span><span class="nf">p</span><span class="p">))</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<h2>为什么if是特殊表达式</h2>
+
+<p>if语法是这个样子的</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='scheme'><span class='line'><span class="p">(</span><span class="k">if </span><span class="nv">predicate</span> <span class="nv">then-clause</span> <span class="nv">else-clause</span><span class="p">)</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>当predicate为真的时候只对then-clause求值,而忽略else-clause.
+一般的应用序表达式首先对参数求值后再求值整个语句,下面的例子说明了这个顺序差异的重要性.</p>
+
+<figure class='code'><figcaption><span>牛顿法求平方根</span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+</pre></td><td class='code'><pre><code class='scheme'><span class='line'><span class="c1">;; Scheme code</span>
+</span><span class='line'><span class="p">(</span><span class="k">define </span><span class="p">(</span><span class="nf">good-enough?</span> <span class="nv">guess</span> <span class="nv">x</span><span class="p">)</span>
+</span><span class='line'>  <span class="p">(</span><span class="k">if </span><span class="p">(</span><span class="nb">&lt; </span><span class="p">(</span><span class="nb">abs </span><span class="p">(</span><span class="nb">- </span><span class="p">(</span><span class="nb">* </span><span class="nv">guess</span> <span class="nv">guess</span><span class="p">)</span> <span class="nv">x</span><span class="p">))</span> <span class="mf">0.000000001</span><span class="p">)</span>
+</span><span class='line'>      <span class="nv">true</span>
+</span><span class='line'>      <span class="nv">false</span><span class="p">))</span>
+</span><span class='line'><span class="p">(</span><span class="k">define </span><span class="p">(</span><span class="nf">improve</span> <span class="nv">guess</span> <span class="nv">x</span><span class="p">)</span>
+</span><span class='line'>  <span class="p">(</span><span class="nb">/ </span><span class="p">(</span><span class="nb">+ </span><span class="nv">guess</span> <span class="p">(</span><span class="nb">/ </span><span class="nv">x</span> <span class="nv">guess</span><span class="p">))</span> <span class="mi">2</span><span class="p">))</span>
+</span><span class='line'><span class="p">(</span><span class="k">define </span><span class="p">(</span><span class="nf">sqrt-iter1</span> <span class="nv">guess</span> <span class="nv">x</span><span class="p">)</span>
+</span><span class='line'>  <span class="p">(</span><span class="k">if </span><span class="p">(</span><span class="nf">good-enough?</span> <span class="nv">guess</span> <span class="nv">x</span><span class="p">)</span>
+</span><span class='line'>      <span class="nv">guess</span>
+</span><span class='line'>      <span class="p">(</span><span class="nf">sqrt-iter1</span> <span class="p">(</span><span class="nf">improve</span> <span class="nv">guess</span> <span class="nv">x</span><span class="p">)</span> <span class="nv">x</span><span class="p">)))</span>
+</span><span class='line'><span class="p">(</span><span class="k">define </span><span class="p">(</span><span class="nf">my-if</span> <span class="nv">predicate</span> <span class="nv">then-clause</span> <span class="nv">else-clause</span><span class="p">)</span>
+</span><span class='line'>  <span class="p">(</span><span class="k">if </span><span class="nv">predicate</span> <span class="nv">then-clause</span> <span class="nv">else-clause</span><span class="p">))</span>
+</span><span class='line'><span class="p">(</span><span class="k">define </span><span class="p">(</span><span class="nf">sqrt-iter2</span> <span class="nv">guess</span> <span class="nv">x</span><span class="p">)</span>
+</span><span class='line'>  <span class="p">(</span><span class="nf">my-if</span> <span class="p">(</span><span class="nf">good-enough?</span> <span class="nv">guess</span> <span class="nv">x</span><span class="p">)</span>
+</span><span class='line'>   <span class="nv">guess</span>
+</span><span class='line'>   <span class="p">(</span><span class="nf">sqrt-iter2</span> <span class="p">(</span><span class="nf">improve</span> <span class="nv">guess</span> <span class="nv">x</span><span class="p">)</span> <span class="nv">x</span><span class="p">)))</span>
+</span><span class='line'><span class="p">(</span><span class="k">define </span><span class="p">(</span><span class="nf">my-sqrt1</span> <span class="nv">x</span><span class="p">)</span>
+</span><span class='line'>  <span class="p">(</span><span class="nf">sqrt-iter1</span> <span class="mf">2.0</span> <span class="nv">x</span><span class="p">))</span>
+</span><span class='line'><span class="p">(</span><span class="k">define </span><span class="p">(</span><span class="nf">my-sqrt2</span> <span class="nv">x</span><span class="p">)</span>
+</span><span class='line'>  <span class="p">(</span><span class="nf">sqrt-iter2</span> <span class="mf">2.0</span> <span class="nv">x</span><span class="p">))</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>my-sqrt1可以求出正确的平方根,
+而my-sqrt2因为首先对参数进行求值,而陷入无限的递归循环中去.
+if表达式会首先对predicate求值,根据结果确定要求值的表达式,与一般的表达式参数求值顺序不一致,比较特殊.</p>
+]]></content>
+  </entry>
   
 </feed>
