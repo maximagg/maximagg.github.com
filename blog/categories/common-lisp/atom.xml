@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <feed xmlns="http://www.w3.org/2005/Atom">
 
-  <title><![CDATA[Category: lisp | 西瓜熊]]></title>
-  <link href="http://maximagg.github.com/blog/categories/lisp/atom.xml" rel="self"/>
+  <title><![CDATA[Category: Common Lisp | 西瓜熊]]></title>
+  <link href="http://maximagg.github.com/blog/categories/common-lisp/atom.xml" rel="self"/>
   <link href="http://maximagg.github.com/"/>
   <updated>2012-12-31T22:29:35+00:00</updated>
   <id>http://maximagg.github.com/</id>
@@ -447,73 +447,6 @@ catch 和 throw 从函数中把控制权转移过来.
 </code></pre>
 
 <p>```</p>
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[应用序和正则序]]></title>
-    <link href="http://maximagg.github.com/blog/2012/12/29/ying-yong-xu-he-zheng-ze-xu/"/>
-    <updated>2012-12-29T17:27:00+00:00</updated>
-    <id>http://maximagg.github.com/blog/2012/12/29/ying-yong-xu-he-zheng-ze-xu</id>
-    <content type="html"><![CDATA[<p>应用序和正则序主要是解释顺序上面的区别在于:<br/>
-应用序首先对参数求值后再代换,
-而正则序在代换完全后再归约求值.
-```scheme
-;; Scheme code
-(define (p) (p))
-(define (test x y)
-  (if (= x 0)</p>
-
-<pre><code>  0
-  y))
-</code></pre>
-
-<p>(test 0 (p))
-```</p>
-
-<h2>为什么if是特殊表达式</h2>
-
-<p>if语法是这个样子的
-<code>scheme
-(if predicate then-clause else-clause)
-</code>
-当predicate为真的时候只对then-clause求值,而忽略else-clause.
-一般的应用序表达式首先对参数求值后再求值整个语句,下面的例子说明了这个顺序差异的重要性.
-```scheme 牛顿法求平方根
-;; Scheme code
-(define (good-enough? guess x)
-  (if (&lt; (abs (- (* guess guess) x)) 0.000000001)</p>
-
-<pre><code>  true
-  false))
-</code></pre>
-
-<p>(define (improve guess x)
-  (/ (+ guess (/ x guess)) 2))
-(define (sqrt-iter1 guess x)
-  (if (good-enough? guess x)</p>
-
-<pre><code>  guess
-  (sqrt-iter1 (improve guess x) x)))
-</code></pre>
-
-<p>(define (my-if predicate then-clause else-clause)
-  (if predicate then-clause else-clause))
-(define (sqrt-iter2 guess x)
-  (my-if (good-enough? guess x)</p>
-
-<pre><code> guess
- (sqrt-iter2 (improve guess x) x)))
-</code></pre>
-
-<p>(define (my-sqrt1 x)
-  (sqrt-iter1 2.0 x))
-(define (my-sqrt2 x)
-  (sqrt-iter2 2.0 x))
-```
-my-sqrt1可以求出正确的平方根,
-而my-sqrt2因为首先对参数进行求值,而陷入无限的递归循环中去.
-if表达式会首先对predicate求值,根据结果确定要求值的表达式,与一般的表达式参数求值顺序不一致,比较特殊.</p>
 ]]></content>
   </entry>
   

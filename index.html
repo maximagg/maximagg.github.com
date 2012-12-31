@@ -9,19 +9,12 @@
   <meta name="author" content="西瓜熊">
 
   
-  <meta name="description" content="应用序和正则序主要是解释顺序上面的区别在于:
-应用序首先对参数求值后再代换,
-而正则序在代换完全后再归约求值. 1
+  <meta name="description" content="区块blocks common lisp 有三个构造区块block的基本操作符.
+在 progn 主体中的表达式会依序求值，并返回最後一个表达式的值: 1
 2
 3
 4
-5
-6
-7
-8
-;; Scheme code
-(define (p) (p))
-(define (test x y) (if (= x 0) 0 y)) (test 0 &hellip;">
+(progn (format t &quot;a&quot;) (format t &quot;b&quot;) (+ 11 12 &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -49,7 +42,7 @@
   <header role="banner"><hgroup>
   <h1><a href="/">西瓜熊</a></h1>
   
-    <h2>guanghuipeng</h2>
+    <h2>aa</h2>
   
 </hgroup>
 
@@ -76,6 +69,686 @@
     <div id="content">
       <div class="blog-index">
   
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2012/12/30/common-lisp-kong-zhi-liu/">Common Lisp 控制流</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2012-12-30T14:48:00+00:00" pubdate data-updated="true">Dec 30<span>th</span>, 2012</time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><h2>区块blocks</h2>
+
+<p>common lisp 有三个构造区块block的基本操作符.<br/>
+在 progn 主体中的表达式会依序求值，并返回最後一个表达式的值:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+</pre></td><td class='code'><pre><code class='cl'><span class='line'><span class="p">(</span><span class="k">progn</span>
+</span><span class='line'>  <span class="p">(</span><span class="nb">format</span> <span class="no">t</span> <span class="s">&quot;a&quot;</span><span class="p">)</span>
+</span><span class='line'>  <span class="p">(</span><span class="nb">format</span> <span class="no">t</span> <span class="s">&quot;b&quot;</span><span class="p">)</span>
+</span><span class='line'>  <span class="p">(</span><span class="nb">+</span> <span class="mi">11</span> <span class="mi">12</span><span class="p">))</span> <span class="c1">;; return 23</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>一个 block 像是带有名字及紧急出口的 progn.第一个实参应为符号.这成为了区块的名字.在主体中的任何地方,可以停止求值,并通过使用 return-from 指定区块的名字,来立即返回数值:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+</pre></td><td class='code'><pre><code class='cl'><span class='line'><span class="p">(</span><span class="k">block</span> <span class="nv">block-name</span>
+</span><span class='line'>  <span class="p">(</span><span class="nb">format</span> <span class="no">t</span> <span class="s">&quot;Here we go.&quot;</span><span class="p">)</span>
+</span><span class='line'>  <span class="p">(</span><span class="k">return-from</span> <span class="nv">block-name</span> <span class="ss">&#39;with-return-value</span><span class="p">)</span>
+</span><span class='line'>  <span class="mi">11</span><span class="p">)</span>
+</span><span class='line'><span class="p">(</span><span class="k">block</span> <span class="no">nil</span>
+</span><span class='line'>  <span class="p">(</span><span class="k">block</span> <span class="nv">block-name</span>
+</span><span class='line'>    <span class="p">(</span><span class="nb">format</span> <span class="no">t</span> <span class="s">&quot;Here we go.&quot;</span><span class="p">)</span>
+</span><span class='line'>    <span class="p">(</span><span class="nb">return</span> <span class="ss">&#39;return-from-nil</span><span class="p">)</span>
+</span><span class='line'>    <span class="p">(</span><span class="k">return-from</span> <span class="nv">block-name</span> <span class="ss">&#39;with-return-value</span><span class="p">)</span>
+</span><span class='line'>    <span class="ss">&#39;not-arrived</span><span class="p">))</span> 
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>许多接受一个表达式主体的 Common Lisp 操作符,皆隐含在一个叫做 nil 的区块里.比如，所有由 do 构造的迭代函数:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+</pre></td><td class='code'><pre><code class='cl'><span class='line'><span class="p">(</span><span class="nb">dolist</span> <span class="p">(</span><span class="nv">x</span> <span class="o">&#39;</span><span class="p">(</span><span class="nv">a</span> <span class="nv">b</span> <span class="nv">c</span> <span class="nv">d</span> <span class="nv">e</span> <span class="nv">f</span> <span class="nv">g</span> <span class="nv">h</span><span class="p">))</span>
+</span><span class='line'>  <span class="p">(</span><span class="nb">format</span> <span class="no">t</span> <span class="s">&quot;~A &quot;</span> <span class="nv">x</span><span class="p">)</span>
+</span><span class='line'>  <span class="p">(</span><span class="k">if</span> <span class="p">(</span><span class="nb">eql</span> <span class="nv">x</span> <span class="ss">&#39;f</span><span class="p">)</span>
+</span><span class='line'>      <span class="p">(</span><span class="nb">return</span> <span class="ss">&#39;done</span><span class="p">)))</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>defun 定义的函数,都隐含在一个与函数同名的区块里面：</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+</pre></td><td class='code'><pre><code class='cl'><span class='line'><span class="p">(</span><span class="nb">defun</span> <span class="nv">foo</span> <span class="p">()</span>
+</span><span class='line'>  <span class="p">(</span><span class="k">return-from</span> <span class="nv">foo</span> <span class="ss">&#39;ok</span><span class="p">))</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>带标签labels的块:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+</pre></td><td class='code'><pre><code class='cl'><span class='line'><span class="p">(</span><span class="k">tagbody</span>
+</span><span class='line'>   <span class="p">(</span><span class="nb">setf</span> <span class="nv">x</span> <span class="mi">0</span><span class="p">)</span>
+</span><span class='line'>   <span class="nv">top-label</span>
+</span><span class='line'>   <span class="p">(</span><span class="nb">setf</span> <span class="nv">x</span> <span class="p">(</span><span class="nb">+</span> <span class="nv">x</span> <span class="mi">1</span><span class="p">))</span>
+</span><span class='line'>   <span class="p">(</span><span class="nb">format</span> <span class="no">t</span> <span class="s">&quot;~A &quot;</span> <span class="nv">x</span><span class="p">)</span>
+</span><span class='line'>   <span class="p">(</span><span class="k">if</span> <span class="p">(</span><span class="nb">&lt;</span> <span class="nv">x</span> <span class="mi">10</span><span class="p">)</span> <span class="p">(</span><span class="k">go</span> <span class="nv">top-label</span><span class="p">)))</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<h2>语境contex</h2>
+
+<p>let 操作符创造出一个新的语法语境lexical context</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+</pre></td><td class='code'><pre><code class='cl'><span class='line'><span class="c1">;; 两个表达式等价</span>
+</span><span class='line'><span class="p">(</span><span class="k">let</span> <span class="p">((</span><span class="nv">x</span> <span class="mi">7</span><span class="p">)</span>
+</span><span class='line'>      <span class="p">(</span><span class="nv">y</span> <span class="mi">8</span><span class="p">))</span>
+</span><span class='line'>  <span class="p">(</span><span class="nb">+</span> <span class="nv">x</span> <span class="nv">y</span><span class="p">))</span>
+</span><span class='line'><span class="p">((</span><span class="k">lambda</span> <span class="p">(</span><span class="nv">x</span> <span class="nv">y</span><span class="p">)</span>
+</span><span class='line'>   <span class="p">(</span><span class="nb">+</span> <span class="nv">x</span> <span class="nv">y</span><span class="p">))</span>
+</span><span class='line'>   <span class="mi">7</span> <span class="mi">8</span><span class="p">)</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<h2>条件conditionals</h2>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+</pre></td><td class='code'><pre><code class='cl'><span class='line'><span class="p">(</span><span class="k">if</span> <span class="no">t</span> <span class="ss">&#39;ok</span> <span class="ss">&#39;nil</span><span class="p">)</span>
+</span><span class='line'><span class="p">(</span><span class="k">if</span> <span class="no">nil</span> <span class="ss">&#39;nil</span> <span class="ss">&#39;ok</span><span class="p">)</span>
+</span><span class='line'><span class="p">(</span><span class="nb">when</span> <span class="no">t</span>
+</span><span class='line'>  <span class="p">(</span><span class="nb">+</span> <span class="mi">1</span> <span class="mi">2</span> <span class="mi">3</span><span class="p">))</span> <span class="c1">;; 6</span>
+</span><span class='line'><span class="p">(</span><span class="nb">unless</span> <span class="no">nil</span>
+</span><span class='line'>  <span class="p">(</span><span class="nb">+</span> <span class="mi">2</span> <span class="mi">3</span> <span class="mi">4</span><span class="p">))</span> <span class="c1">;; 9</span>
+</span><span class='line'><span class="p">(</span><span class="nb">cond</span>
+</span><span class='line'>  <span class="p">(</span><span class="no">nil</span> <span class="ss">&#39;not-here</span><span class="p">)</span>
+</span><span class='line'>  <span class="p">(</span><span class="no">t</span> <span class="ss">&#39;here</span><span class="p">)</span>
+</span><span class='line'>  <span class="p">(</span><span class="no">t</span> <span class="ss">&#39;here-or-not</span><span class="p">))</span> <span class="c1">;; HERE</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<h2>迭代iteration</h2>
+
+<p>最基本的是 do</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+</pre></td><td class='code'><pre><code class='cl'><span class='line'><span class="p">(</span><span class="nb">do</span> <span class="p">((</span><span class="nv">i</span> <span class="mi">0</span> <span class="p">(</span><span class="nb">+</span> <span class="nv">i</span> <span class="mi">1</span><span class="p">))</span>
+</span><span class='line'>     <span class="p">(</span><span class="nv">j</span> <span class="mi">0</span> <span class="nv">i</span><span class="p">))</span>
+</span><span class='line'>    <span class="p">((</span><span class="nb">&gt;</span> <span class="nv">i</span> <span class="mi">10</span><span class="p">)</span> <span class="ss">&#39;done</span><span class="p">)</span>
+</span><span class='line'>  <span class="p">(</span><span class="nb">format</span> <span class="no">t</span> <span class="s">&quot;~A &quot;</span> <span class="nv">j</span><span class="p">))</span> <span class="c1">;; 0 0 1 2 3 4 5 6 7 8 9</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<h2>多值multiple values</h2>
+
+<p>返回多值</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='cl'><span class='line'><span class="p">(</span><span class="nb">values</span> <span class="ss">&#39;a</span> <span class="ss">&#39;b</span> <span class="ss">&#39;c</span><span class="p">)</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>接受多值</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+</pre></td><td class='code'><pre><code class='cl'><span class='line'><span class="p">(</span><span class="nb">multiple-value-bind</span> <span class="p">(</span><span class="nv">x</span> <span class="nv">y</span> <span class="nv">z</span><span class="p">)</span> <span class="p">(</span><span class="nb">values</span> <span class="mi">1</span> <span class="mi">2</span> <span class="mi">3</span><span class="p">)</span>
+</span><span class='line'>  <span class="p">(</span><span class="nb">list</span> <span class="nv">x</span> <span class="nv">y</span> <span class="nv">z</span><span class="p">))</span>
+</span><span class='line'><span class="p">(</span><span class="k">multiple-value-call</span> <span class="nf">#&#39;</span><span class="nb">+</span> <span class="p">(</span><span class="nb">values</span> <span class="mi">1</span> <span class="mi">2</span> <span class="mi">3</span><span class="p">))</span>
+</span><span class='line'><span class="p">(</span><span class="nb">multiple-value-list</span> <span class="p">(</span><span class="nb">values</span> <span class="ss">&#39;a</span> <span class="ss">&#39;b</span> <span class="ss">&#39;c</span><span class="p">))</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<h2>终止aborts</h2>
+
+<p>return 在任何时候可以离开一个 block.<br/>
+catch 和 throw 从函数中把控制权转移过来.</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+</pre></td><td class='code'><pre><code class='cl'><span class='line'><span class="p">(</span><span class="nb">defun</span> <span class="nv">super</span> <span class="p">()</span>
+</span><span class='line'>  <span class="p">(</span><span class="k">catch</span> <span class="ss">&#39;abort</span>
+</span><span class='line'>    <span class="p">(</span><span class="nv">sub</span><span class="p">)</span>
+</span><span class='line'>    <span class="p">(</span><span class="nv">farmat</span> <span class="no">t</span> <span class="s">&quot;We&#39;ll never see this.&quot;</span><span class="p">)))</span>
+</span><span class='line'><span class="p">(</span><span class="nb">defun</span> <span class="nv">sub</span> <span class="p">()</span>
+</span><span class='line'>  <span class="p">(</span><span class="k">throw</span> <span class="ss">&#39;abort</span> <span class="mi">99</span><span class="p">))</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<h2>函数functions</h2>
+
+<p>局部函数 使用 labels 定义.</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+</pre></td><td class='code'><pre><code class='cl'><span class='line'><span class="p">(</span><span class="k">labels</span> <span class="p">((</span><span class="nv">add10</span> <span class="p">(</span><span class="nv">x</span><span class="p">)</span> <span class="p">(</span><span class="nb">+</span> <span class="mi">10</span> <span class="nv">x</span><span class="p">))</span>
+</span><span class='line'>   <span class="p">(</span><span class="nv">add99</span> <span class="p">(</span><span class="nv">x</span><span class="p">)</span> <span class="p">(</span><span class="nb">+</span> <span class="mi">99</span> <span class="nv">x</span><span class="p">)))</span>
+</span><span class='line'>  <span class="p">(</span><span class="nv">add99</span> <span class="p">(</span><span class="nv">add10</span> <span class="mi">10</span><span class="p">)))</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>参数列表parameter lists
+普通参数又称为必要参数
+可选参数   &amp;optional
+剩余参数   &amp;rest
+关键字参数 &amp;key</p>
+</div>
+  
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2012/12/29/common-lisp-ji-chu-shu-ju-jie-gou/">Common Lisp 基础数据结构</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2012-12-29T21:45:00+00:00" pubdate data-updated="true">Dec 29<span>th</span>, 2012</time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><h2>构建conses</h2>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+</pre></td><td class='code'><pre><code class='cl'><span class='line'><span class="p">(</span><span class="nb">setf</span> <span class="nv">a-cons</span> <span class="p">(</span><span class="nb">cons</span> <span class="ss">&#39;a</span> <span class="no">nil</span><span class="p">))</span>
+</span><span class='line'><span class="p">(</span><span class="nb">car</span> <span class="nv">a-cons</span><span class="p">)</span>
+</span><span class='line'><span class="p">(</span><span class="nb">cdr</span> <span class="nv">a-cons</span><span class="p">)</span>
+</span><span class='line'><span class="p">(</span><span class="nb">equal</span> <span class="p">(</span><span class="nb">cons</span> <span class="ss">&#39;a</span>
+</span><span class='line'>       <span class="p">(</span><span class="nb">cons</span> <span class="ss">&#39;b</span>
+</span><span class='line'>         <span class="p">(</span><span class="nb">cons</span> <span class="ss">&#39;c</span> <span class="no">nil</span><span class="p">)))</span>
+</span><span class='line'>       <span class="p">(</span><span class="nb">list</span> <span class="ss">&#39;a</span> <span class="ss">&#39;b</span> <span class="ss">&#39;c</span><span class="p">))</span>  <span class="c1">;;T</span>
+</span><span class='line'><span class="p">(</span><span class="nb">consp</span> <span class="o">&#39;</span><span class="p">(</span><span class="nv">x</span><span class="p">))</span> <span class="c1">;;T</span>
+</span><span class='line'><span class="p">(</span><span class="nb">consp</span> <span class="ss">&#39;x</span><span class="p">)</span> <span class="c1">;;NIL</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<h2>列表lists</h2>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+</pre></td><td class='code'><pre><code class='cl'><span class='line'><span class="p">(</span><span class="nb">copy-list</span> <span class="o">&#39;</span><span class="p">(</span><span class="mi">1</span> <span class="mi">2</span> <span class="mi">3</span> <span class="mi">4</span> <span class="mi">5</span> <span class="nv">a</span> <span class="mi">6</span><span class="p">))</span>
+</span><span class='line'><span class="p">(</span><span class="nb">cons</span> <span class="ss">&#39;a</span> <span class="o">&#39;</span><span class="p">(</span><span class="mi">1</span> <span class="mi">2</span> <span class="mi">3</span> <span class="mi">4</span> <span class="mi">5</span> <span class="mi">6</span><span class="p">))</span>
+</span><span class='line'><span class="p">(</span><span class="nb">car</span> <span class="o">&#39;</span><span class="p">(</span><span class="mi">1</span> <span class="mi">2</span> <span class="mi">3</span> <span class="mi">4</span> <span class="mi">5</span> <span class="mi">6</span><span class="p">))</span>
+</span><span class='line'><span class="p">(</span><span class="nb">cdr</span> <span class="o">&#39;</span><span class="p">(</span><span class="mi">1</span> <span class="mi">2</span> <span class="mi">3</span> <span class="mi">4</span> <span class="mi">5</span> <span class="mi">6</span><span class="p">))</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<h2>Run length encoding</h2>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+<span class='line-number'>29</span>
+<span class='line-number'>30</span>
+<span class='line-number'>31</span>
+<span class='line-number'>32</span>
+<span class='line-number'>33</span>
+<span class='line-number'>34</span>
+<span class='line-number'>35</span>
+</pre></td><td class='code'><pre><code class='cl'><span class='line'><span class="p">(</span><span class="nb">defun</span> <span class="nv">compress</span> <span class="p">(</span><span class="nv">x</span><span class="p">)</span>
+</span><span class='line'>  <span class="p">(</span><span class="k">if</span> <span class="p">(</span><span class="nb">consp</span> <span class="nv">x</span><span class="p">)</span>
+</span><span class='line'>      <span class="p">(</span><span class="nv">compr</span> <span class="p">(</span><span class="nb">car</span> <span class="nv">x</span><span class="p">)</span> <span class="mi">1</span> <span class="p">(</span><span class="nb">cdr</span> <span class="nv">x</span><span class="p">))</span>
+</span><span class='line'>      <span class="nv">x</span><span class="p">))</span>
+</span><span class='line'><span class="p">(</span><span class="nb">defun</span> <span class="nv">compr</span> <span class="p">(</span><span class="nb">elt</span> <span class="nv">n</span> <span class="nv">lst</span><span class="p">)</span>
+</span><span class='line'>  <span class="p">(</span><span class="k">if</span> <span class="p">(</span><span class="nb">null</span> <span class="nv">lst</span><span class="p">)</span>
+</span><span class='line'>      <span class="p">(</span><span class="nb">list</span> <span class="p">(</span><span class="nv">n-elts</span> <span class="nb">elt</span> <span class="nv">n</span><span class="p">))</span>
+</span><span class='line'>      <span class="p">(</span><span class="k">let</span> <span class="p">((</span><span class="nv">next</span> <span class="p">(</span><span class="nb">car</span> <span class="nv">lst</span><span class="p">)))</span>
+</span><span class='line'>  <span class="p">(</span><span class="k">if</span> <span class="p">(</span><span class="nb">eql</span> <span class="nv">next</span> <span class="nb">elt</span><span class="p">)</span>
+</span><span class='line'>      <span class="p">(</span><span class="nv">compr</span> <span class="nb">elt</span> <span class="p">(</span><span class="nb">+</span> <span class="nv">n</span> <span class="mi">1</span><span class="p">)</span> <span class="p">(</span><span class="nb">cdr</span> <span class="nv">lst</span><span class="p">))</span>
+</span><span class='line'>      <span class="p">(</span><span class="nb">cons</span> <span class="p">(</span><span class="nv">n-elts</span> <span class="nb">elt</span> <span class="nv">n</span><span class="p">)</span>
+</span><span class='line'>        <span class="p">(</span><span class="nv">compr</span> <span class="nv">next</span> <span class="mi">1</span> <span class="p">(</span><span class="nb">cdr</span> <span class="nv">lst</span><span class="p">)))))))</span>
+</span><span class='line'><span class="p">(</span><span class="nb">defun</span> <span class="nv">n-elts</span> <span class="p">(</span><span class="nb">elt</span> <span class="nv">n</span><span class="p">)</span>
+</span><span class='line'>  <span class="p">(</span><span class="k">if</span> <span class="p">(</span><span class="nb">&gt;</span> <span class="nv">n</span> <span class="mi">1</span><span class="p">)</span>
+</span><span class='line'>      <span class="p">(</span><span class="nb">list</span> <span class="nv">n</span> <span class="nb">elt</span><span class="p">)</span>
+</span><span class='line'>      <span class="nb">elt</span><span class="p">))</span>
+</span><span class='line'>
+</span><span class='line'><span class="p">(</span><span class="nb">setf</span> <span class="nv">a-compress-list</span> <span class="p">(</span><span class="nv">compress</span> <span class="o">&#39;</span><span class="p">(</span><span class="mi">10</span> <span class="mi">1</span> <span class="mi">1</span> <span class="mi">1</span> <span class="mi">1</span> <span class="mi">1</span> <span class="mi">1</span> <span class="mi">1</span> <span class="mi">1</span> <span class="mi">1</span> <span class="mi">8</span> <span class="mi">8</span> <span class="mi">8</span> <span class="mi">8</span> <span class="mi">8</span> <span class="mi">8</span> <span class="mi">1</span> <span class="mi">1</span> <span class="mi">2</span> <span class="mi">2</span> <span class="mi">2</span> <span class="mi">2</span> <span class="mi">2</span> <span class="mi">2</span> <span class="mi">2</span> <span class="mi">2</span> <span class="mi">3</span><span class="p">)))</span>
+</span><span class='line'><span class="p">(</span><span class="nb">format</span> <span class="no">t</span> <span class="s">&quot;~A&quot;</span> <span class="nv">a-compress-list</span><span class="p">)</span> <span class="c1">;;(10 (9 1) (6 8) (2 1) (8 2) 3)</span>
+</span><span class='line'>
+</span><span class='line'><span class="p">(</span><span class="nb">defun</span> <span class="nv">uncompress</span> <span class="p">(</span><span class="nv">lst</span><span class="p">)</span>
+</span><span class='line'>  <span class="p">(</span><span class="k">if</span> <span class="p">(</span><span class="nb">null</span> <span class="nv">lst</span><span class="p">)</span>
+</span><span class='line'>      <span class="no">nil</span>
+</span><span class='line'>      <span class="p">(</span><span class="k">let</span> <span class="p">((</span><span class="nb">elt</span> <span class="p">(</span><span class="nb">car</span> <span class="nv">lst</span><span class="p">))</span>
+</span><span class='line'>      <span class="p">(</span><span class="nb">rest</span> <span class="p">(</span><span class="nv">uncompress</span> <span class="p">(</span><span class="nb">cdr</span> <span class="nv">lst</span><span class="p">))))</span>
+</span><span class='line'>  <span class="p">(</span><span class="k">if</span> <span class="p">(</span><span class="nb">consp</span> <span class="nb">elt</span><span class="p">)</span>
+</span><span class='line'>      <span class="p">(</span><span class="nb">append</span> <span class="p">(</span><span class="nb">apply</span> <span class="nf">#&#39;</span><span class="nv">list-of</span> <span class="nb">elt</span><span class="p">)</span>
+</span><span class='line'>          <span class="nb">rest</span><span class="p">)</span>
+</span><span class='line'>      <span class="p">(</span><span class="nb">cons</span> <span class="nb">elt</span> <span class="nb">rest</span><span class="p">)))))</span>
+</span><span class='line'><span class="p">(</span><span class="nb">defun</span> <span class="nv">list-of</span> <span class="p">(</span><span class="nv">n</span> <span class="nb">elt</span><span class="p">)</span>
+</span><span class='line'>  <span class="p">(</span><span class="k">if</span> <span class="p">(</span><span class="nb">zerop</span> <span class="nv">n</span><span class="p">)</span>
+</span><span class='line'>      <span class="no">nil</span>
+</span><span class='line'>      <span class="p">(</span><span class="nb">cons</span> <span class="nb">elt</span> <span class="p">(</span><span class="nv">list-of</span> <span class="p">(</span><span class="nb">-</span> <span class="nv">n</span> <span class="mi">1</span><span class="p">)</span> <span class="nb">elt</span><span class="p">))))</span>
+</span><span class='line'>
+</span><span class='line'><span class="p">(</span><span class="nv">uncompress</span> <span class="nv">a-compress-list</span><span class="p">)</span> <span class="c1">;;(10 1 1 1 1 1 1 1 1 1 8 8 8 8 8 8 1 1 2 2 2 2 2 2 2 2 3)</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<h2>Mapping Functions</h2>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='cl'><span class='line'><span class="p">(</span><span class="nb">mapcar</span> <span class="nf">#&#39;</span><span class="p">(</span><span class="k">lambda</span> <span class="p">(</span><span class="nv">x</span><span class="p">)</span> <span class="p">(</span><span class="nb">format</span> <span class="no">t</span> <span class="s">&quot;~A &quot;</span> <span class="nv">x</span><span class="p">))</span> <span class="o">&#39;</span><span class="p">(</span> <span class="s">&quot;Hello&quot;</span> <span class="mi">1</span> <span class="mi">2</span> <span class="ss">&#39;a</span><span class="p">))</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<h2>树trees</h2>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+</pre></td><td class='code'><pre><code class='cl'><span class='line'><span class="p">(</span><span class="nb">defun</span> <span class="nv">our-copy-tree</span> <span class="p">(</span><span class="nv">tr</span><span class="p">)</span>
+</span><span class='line'>  <span class="p">(</span><span class="k">if</span> <span class="p">(</span><span class="nb">atom</span> <span class="nv">tr</span><span class="p">)</span>
+</span><span class='line'>      <span class="nv">tr</span>
+</span><span class='line'>      <span class="p">(</span><span class="nb">cons</span> <span class="p">(</span><span class="nv">our-copy-tree</span> <span class="p">(</span><span class="nb">car</span> <span class="nv">tr</span><span class="p">))</span>
+</span><span class='line'>      <span class="p">(</span><span class="nv">our-copy-tree</span> <span class="p">(</span><span class="nb">cdr</span> <span class="nv">tr</span><span class="p">)))))</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<h2>集合sets</h2>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+</pre></td><td class='code'><pre><code class='cl'><span class='line'><span class="p">(</span><span class="nb">member</span> <span class="ss">&#39;b</span> <span class="o">&#39;</span><span class="p">(</span><span class="mi">1</span> <span class="mi">2</span> <span class="mi">3</span> <span class="mi">4</span> <span class="mi">5</span> <span class="mi">6</span> <span class="nv">b</span> <span class="nv">c</span> <span class="nv">d</span> <span class="nv">e</span> <span class="nv">f</span> <span class="nv">g</span> <span class="nv">h</span><span class="p">))</span> <span class="c1">;;(B C D E F G H)</span>
+</span><span class='line'><span class="p">(</span><span class="nb">member-if-not</span> <span class="nf">#&#39;</span><span class="nb">oddp</span> <span class="o">&#39;</span><span class="p">(</span><span class="mi">1</span> <span class="mi">2</span> <span class="mi">3</span> <span class="mi">4</span> <span class="mi">5</span> <span class="mi">6</span> <span class="mi">7</span> <span class="mi">8</span> <span class="mi">9</span><span class="p">))</span>
+</span><span class='line'><span class="p">(</span><span class="nb">adjoin</span> <span class="ss">&#39;a</span> <span class="o">&#39;</span><span class="p">(</span><span class="mi">1</span> <span class="mi">2</span> <span class="mi">3</span> <span class="mi">4</span> <span class="mi">5</span> <span class="mi">6</span><span class="p">))</span>
+</span><span class='line'><span class="p">(</span><span class="nb">union</span> <span class="o">&#39;</span><span class="p">(</span><span class="nv">a</span> <span class="nv">b</span> <span class="nv">c</span> <span class="nv">d</span> <span class="nv">e</span> <span class="nv">f</span> <span class="nv">g</span><span class="p">)</span> <span class="o">&#39;</span><span class="p">(</span><span class="mi">1</span> <span class="mi">2</span> <span class="mi">3</span> <span class="mi">4</span> <span class="mi">5</span> <span class="mi">6</span><span class="p">))</span>
+</span><span class='line'><span class="p">(</span><span class="nb">intersection</span> <span class="o">&#39;</span><span class="p">(</span><span class="mi">1</span> <span class="mi">2</span> <span class="mi">3</span> <span class="mi">4</span> <span class="mi">5</span> <span class="nv">a</span> <span class="nv">b</span> <span class="nv">c</span> <span class="nv">d</span> <span class="nv">e</span> <span class="nv">f</span> <span class="nv">g</span> <span class="nv">h</span><span class="p">)</span> <span class="o">&#39;</span><span class="p">(</span><span class="nv">a</span> <span class="nv">b</span> <span class="nv">c</span> <span class="nv">d</span> <span class="nv">e</span> <span class="nv">f</span> <span class="nv">g</span> <span class="nv">h</span> <span class="mi">0</span> <span class="mi">9</span> <span class="mi">8</span> <span class="mi">7</span> <span class="mi">6</span><span class="p">))</span>
+</span><span class='line'><span class="p">(</span><span class="nb">set-difference</span> <span class="o">&#39;</span><span class="p">(</span><span class="mi">1</span> <span class="mi">2</span> <span class="mi">3</span> <span class="mi">4</span> <span class="mi">5</span> <span class="nv">a</span> <span class="nv">b</span> <span class="nv">c</span> <span class="nv">d</span> <span class="nv">e</span><span class="p">)</span> <span class="o">&#39;</span><span class="p">(</span><span class="mi">3</span> <span class="mi">4</span> <span class="mi">5</span> <span class="nv">d</span> <span class="nv">e</span> <span class="nv">g</span> <span class="nv">h</span><span class="p">))</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<h2>序列sequences</h2>
+
+<p>序列包括list vector string</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+</pre></td><td class='code'><pre><code class='cl'><span class='line'><span class="p">(</span><span class="nb">length</span> <span class="o">&#39;</span><span class="p">(</span><span class="mi">1</span> <span class="mi">2</span> <span class="mi">3</span> <span class="mi">4</span> <span class="mi">5</span> <span class="mi">6</span> <span class="mi">7</span> <span class="mi">8</span> <span class="mi">9</span> <span class="mi">0</span> <span class="nv">a</span> <span class="nv">b</span> <span class="nv">c</span> <span class="nv">d</span> <span class="nv">e</span> <span class="nv">f</span> <span class="nv">g</span> <span class="nv">h</span><span class="p">))</span>
+</span><span class='line'><span class="p">(</span><span class="nb">subseq</span> <span class="o">&#39;</span><span class="p">(</span><span class="nv">a</span> <span class="nv">b</span> <span class="nv">c</span> <span class="nv">d</span> <span class="nv">e</span> <span class="nv">f</span> <span class="nv">g</span> <span class="nv">h</span><span class="p">)</span> <span class="mi">0</span> <span class="mi">7</span><span class="p">)</span>
+</span><span class='line'><span class="p">(</span><span class="nb">reverse</span> <span class="o">&#39;</span><span class="p">(</span><span class="nv">a</span> <span class="nv">b</span> <span class="nv">c</span> <span class="nv">d</span> <span class="nv">e</span> <span class="nv">f</span> <span class="nv">g</span> <span class="mi">1</span> <span class="mi">2</span> <span class="mi">3</span> <span class="mi">4</span> <span class="mi">5</span> <span class="mi">6</span><span class="p">))</span>
+</span><span class='line'><span class="p">(</span><span class="nb">reverse</span> <span class="s">&quot;abcdefg123456&quot;</span><span class="p">)</span>
+</span><span class='line'>
+</span><span class='line'><span class="p">(</span><span class="nb">defun</span> <span class="nv">mirror?</span> <span class="p">(</span><span class="nv">s</span><span class="p">)</span>
+</span><span class='line'>  <span class="p">(</span><span class="k">let</span> <span class="p">((</span><span class="nv">len</span> <span class="p">(</span><span class="nb">length</span> <span class="nv">s</span><span class="p">)))</span>
+</span><span class='line'>    <span class="p">(</span><span class="nb">and</span> <span class="p">(</span><span class="nb">evenp</span> <span class="nv">len</span><span class="p">)</span>
+</span><span class='line'>   <span class="p">(</span><span class="k">let</span> <span class="p">((</span><span class="nv">mid</span> <span class="p">(</span><span class="nb">/</span> <span class="nv">len</span> <span class="mi">2</span><span class="p">)))</span>
+</span><span class='line'>     <span class="p">(</span><span class="nb">equal</span> <span class="p">(</span><span class="nb">subseq</span> <span class="nv">s</span> <span class="mi">0</span> <span class="nv">mid</span><span class="p">)</span>
+</span><span class='line'>        <span class="p">(</span><span class="nb">reverse</span> <span class="p">(</span><span class="nb">subseq</span> <span class="nv">s</span> <span class="nv">mid</span><span class="p">)))))))</span>
+</span><span class='line'>
+</span><span class='line'><span class="p">(</span><span class="nv">mirror?</span> <span class="s">&quot;aa&quot;</span><span class="p">)</span>
+</span><span class='line'>
+</span><span class='line'><span class="p">(</span><span class="nb">setf</span> <span class="nv">a-list-num</span>  <span class="o">&#39;</span><span class="p">(</span><span class="mi">0</span> <span class="mi">2</span> <span class="mi">3</span> <span class="mi">4</span> <span class="mi">1</span> <span class="mi">11</span> <span class="mi">22</span> <span class="mi">5</span> <span class="mi">44</span><span class="p">))</span>
+</span><span class='line'><span class="p">(</span><span class="nb">equal</span> <span class="p">(</span><span class="nb">sort</span> <span class="nv">a-list-num</span> <span class="nf">#&#39;</span><span class="nb">&gt;</span><span class="p">)</span> <span class="o">&#39;</span><span class="p">(</span><span class="mi">0</span> <span class="mi">2</span> <span class="mi">3</span> <span class="mi">4</span> <span class="mi">1</span> <span class="mi">11</span> <span class="mi">22</span> <span class="mi">5</span> <span class="mi">44</span><span class="p">))</span> <span class="c1">;; NIL sort is destructive</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>栈stacks</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+</pre></td><td class='code'><pre><code class='cl'><span class='line'><span class="c1">;; pushdown stack</span>
+</span><span class='line'><span class="p">(</span><span class="nb">setf</span> <span class="nv">a-stack</span> <span class="no">nil</span><span class="p">)</span>
+</span><span class='line'><span class="c1">;; use cons</span>
+</span><span class='line'><span class="p">(</span><span class="nb">push</span> <span class="ss">&#39;a</span> <span class="nv">a-stack</span><span class="p">)</span>
+</span><span class='line'><span class="p">(</span><span class="nb">pop</span> <span class="nv">a-stack</span><span class="p">)</span>
+</span><span class='line'><span class="c1">;; use adjoin</span>
+</span><span class='line'><span class="p">(</span><span class="k">let</span> <span class="p">((</span><span class="nv">x</span> <span class="o">&#39;</span><span class="p">(</span><span class="nv">a</span> <span class="nv">b</span><span class="p">)))</span>
+</span><span class='line'>  <span class="p">(</span><span class="nb">pushnew</span> <span class="ss">&#39;c</span> <span class="nv">x</span><span class="p">)</span>
+</span><span class='line'>  <span class="p">(</span><span class="nb">pushnew</span> <span class="ss">&#39;a</span> <span class="nv">x</span><span class="p">)</span>
+</span><span class='line'>  <span class="nv">x</span><span class="p">)</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<h2>点状列表dotted lists</h2>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+</pre></td><td class='code'><pre><code class='cl'><span class='line'><span class="p">(</span><span class="nb">equal</span> <span class="p">(</span><span class="nb">cons</span> <span class="ss">&#39;a</span> <span class="ss">&#39;b</span><span class="p">)</span> <span class="o">&#39;</span><span class="p">(</span><span class="nv">a</span> <span class="o">.</span> <span class="nv">b</span><span class="p">))</span> <span class="c1">;;T</span>
+</span><span class='line'><span class="p">(</span><span class="nb">equal</span> <span class="p">(</span><span class="nb">cons</span> <span class="ss">&#39;a</span> <span class="ss">&#39;b</span><span class="p">)</span> <span class="o">&#39;</span><span class="p">(</span><span class="nv">a</span> <span class="nv">b</span><span class="p">))</span> <span class="c1">;;NIL</span>
+</span><span class='line'><span class="p">(</span><span class="nb">equal</span> <span class="o">&#39;</span><span class="p">(</span><span class="nv">a</span> <span class="nv">b</span> <span class="nv">c</span> <span class="nv">d</span> <span class="nv">e</span><span class="p">)</span> <span class="o">&#39;</span><span class="p">(</span><span class="nv">a</span> <span class="o">.</span> <span class="p">(</span><span class="nv">b</span> <span class="o">.</span> <span class="p">(</span><span class="nv">c</span> <span class="o">.</span> <span class="p">(</span><span class="nv">d</span> <span class="o">.</span> <span class="p">(</span><span class="nv">e</span> <span class="o">.</span> <span class="no">nil</span><span class="p">))))))</span> <span class="c1">;;T</span>
+</span><span class='line'><span class="o">&#39;</span><span class="p">(</span><span class="nv">a</span> <span class="nv">b</span> <span class="nv">c</span> <span class="o">.</span> <span class="nv">d</span><span class="p">)</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<h2>关联列表assoc-lists</h2>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+</pre></td><td class='code'><pre><code class='cl'><span class='line'><span class="p">(</span><span class="nb">setf</span> <span class="nv">a-assoc</span> <span class="o">&#39;</span><span class="p">((</span><span class="nb">+</span> <span class="o">.</span> <span class="s">&quot;add&quot;</span><span class="p">)</span>
+</span><span class='line'>      <span class="p">(</span><span class="nb">-</span> <span class="o">.</span> <span class="s">&quot;substract&quot;</span><span class="p">)))</span>
+</span><span class='line'><span class="p">(</span><span class="nb">assoc</span> <span class="ss">&#39;+</span> <span class="nv">a-assoc</span><span class="p">)</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<h2>有向图最短路径shortest path</h2>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='cl'><span class='line'><span class="p">(</span><span class="nb">setf</span> <span class="nv">a-graph</span> <span class="o">&#39;</span><span class="p">((</span><span class="nv">a</span> <span class="nv">b</span> <span class="nv">c</span><span class="p">)</span> <span class="p">(</span><span class="nv">b</span> <span class="nv">c</span><span class="p">)</span> <span class="p">(</span><span class="nv">c</span> <span class="nv">d</span><span class="p">)))</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p><img src="/images/blog/cl-a-graph.png" title="assoc-lists" alt="Alt text" /></p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+</pre></td><td class='code'><pre><code class='cl'><span class='line'><span class="p">(</span><span class="nb">defun</span> <span class="nv">shortest-path</span> <span class="p">(</span><span class="nv">start</span> <span class="nv">end</span> <span class="nv">graph</span><span class="p">)</span>
+</span><span class='line'>  <span class="p">(</span><span class="nv">bfs</span> <span class="nv">end</span> <span class="p">(</span><span class="nb">list</span> <span class="p">(</span><span class="nb">list</span> <span class="nv">start</span><span class="p">))</span> <span class="nv">graph</span><span class="p">))</span>
+</span><span class='line'><span class="p">(</span><span class="nb">defun</span> <span class="nv">bfs</span> <span class="p">(</span><span class="nv">end</span> <span class="nv">queue</span> <span class="nv">graph</span><span class="p">)</span>
+</span><span class='line'>  <span class="p">(</span><span class="k">if</span> <span class="p">(</span><span class="nb">null</span> <span class="nv">graph</span><span class="p">)</span>
+</span><span class='line'>      <span class="no">nil</span>
+</span><span class='line'>      <span class="p">(</span><span class="k">let</span> <span class="p">((</span><span class="nv">path</span> <span class="p">(</span><span class="nb">car</span> <span class="nv">queue</span><span class="p">)))</span>
+</span><span class='line'>  <span class="p">(</span><span class="k">let</span> <span class="p">((</span><span class="nv">node</span> <span class="p">(</span><span class="nb">car</span> <span class="nv">path</span><span class="p">)))</span>
+</span><span class='line'>    <span class="p">(</span><span class="k">if</span> <span class="p">(</span><span class="nb">eql</span> <span class="nv">node</span> <span class="nv">end</span><span class="p">)</span>
+</span><span class='line'>        <span class="p">(</span><span class="nb">reverse</span> <span class="nv">path</span><span class="p">)</span>
+</span><span class='line'>        <span class="p">(</span><span class="nv">bfs</span> <span class="nv">end</span>
+</span><span class='line'>         <span class="p">(</span><span class="nb">append</span> <span class="p">(</span><span class="nb">cdr</span> <span class="nv">queue</span><span class="p">)</span>
+</span><span class='line'>             <span class="p">(</span><span class="nv">new-paths</span> <span class="nv">path</span> <span class="nv">node</span> <span class="nv">graph</span><span class="p">))</span>
+</span><span class='line'>         <span class="nv">graph</span><span class="p">))))))</span>
+</span><span class='line'><span class="p">(</span><span class="nb">defun</span> <span class="nv">new-paths</span> <span class="p">(</span><span class="nv">path</span> <span class="nv">node</span> <span class="nv">graph</span><span class="p">)</span>
+</span><span class='line'>  <span class="p">(</span><span class="nb">mapcar</span> <span class="nf">#&#39;</span><span class="p">(</span><span class="k">lambda</span> <span class="p">(</span><span class="nv">n</span><span class="p">)</span>
+</span><span class='line'>        <span class="p">(</span><span class="nb">cons</span> <span class="nv">n</span> <span class="nv">path</span><span class="p">))</span>
+</span><span class='line'>    <span class="p">(</span><span class="nb">cdr</span> <span class="p">(</span><span class="nb">assoc</span> <span class="nv">node</span> <span class="nv">graph</span><span class="p">))))</span>
+</span><span class='line'>
+</span><span class='line'><span class="p">(</span><span class="nv">shortest-path</span> <span class="ss">&#39;a</span> <span class="ss">&#39;d</span> <span class="nv">a-graph</span><span class="p">)</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<h2>数组array</h2>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+</pre></td><td class='code'><pre><code class='cl'><span class='line'><span class="p">(</span><span class="nb">setf</span> <span class="nv">a-array</span> <span class="p">(</span><span class="nb">make-array</span> <span class="o">&#39;</span><span class="p">(</span><span class="mi">2</span> <span class="mi">3</span><span class="p">)</span> <span class="ss">:initial-element</span> <span class="mi">0</span><span class="p">))</span> <span class="c1">;;#2A((0 0 0) (0 0 0))</span>
+</span><span class='line'><span class="p">(</span><span class="nb">aref</span> <span class="nv">a-array</span> <span class="mi">0</span> <span class="mi">0</span><span class="p">)</span>
+</span><span class='line'><span class="p">(</span><span class="nb">setf</span> <span class="p">(</span><span class="nb">aref</span> <span class="nv">a-array</span> <span class="mi">0</span> <span class="mi">1</span><span class="p">)</span> <span class="ss">&#39;a1</span><span class="p">)</span>
+</span><span class='line'><span class="p">(</span><span class="nb">setf</span> <span class="nv">sec-array</span> <span class="p">(</span><span class="nb">make-array</span> <span class="mi">3</span> <span class="ss">:initial-element</span> <span class="mi">2</span><span class="p">))</span>
+</span><span class='line'><span class="p">(</span><span class="nb">equal</span> <span class="nv">sec-array</span> <span class="p">(</span><span class="nb">vector</span> <span class="mi">2</span> <span class="mi">2</span> <span class="mi">2</span><span class="p">))</span> <span class="c1">;;NIL</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<h2>二分搜索binary search</h2>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+</pre></td><td class='code'><pre><code class='cl'><span class='line'><span class="p">(</span><span class="nb">defun</span> <span class="nv">bin-search</span> <span class="p">(</span><span class="nv">obj</span> <span class="nv">vec</span><span class="p">)</span>
+</span><span class='line'>  <span class="p">(</span><span class="k">let</span> <span class="p">((</span><span class="nv">len</span> <span class="p">(</span><span class="nb">length</span> <span class="nv">vec</span><span class="p">)))</span>
+</span><span class='line'>    <span class="p">(</span><span class="nb">and</span> <span class="p">(</span><span class="nb">not</span> <span class="p">(</span><span class="nb">zerop</span> <span class="nv">len</span><span class="p">))</span>
+</span><span class='line'>   <span class="p">(</span><span class="nv">finder</span> <span class="nv">obj</span> <span class="nv">vec</span> <span class="mi">0</span> <span class="p">(</span><span class="nb">-</span> <span class="nv">len</span> <span class="mi">1</span><span class="p">)))))</span>
+</span><span class='line'><span class="p">(</span><span class="nb">defun</span> <span class="nv">finder</span> <span class="p">(</span><span class="nv">obj</span> <span class="nv">vec</span> <span class="nv">start</span> <span class="nv">end</span><span class="p">)</span>
+</span><span class='line'>  <span class="p">(</span><span class="nb">format</span> <span class="no">t</span> <span class="s">&quot;~A~%&quot;</span> <span class="p">(</span><span class="nb">subseq</span> <span class="nv">vec</span> <span class="nv">start</span> <span class="p">(</span><span class="nb">+</span> <span class="nv">end</span> <span class="mi">1</span><span class="p">)))</span>
+</span><span class='line'>  <span class="p">(</span><span class="k">let</span> <span class="p">((</span><span class="nv">range</span> <span class="p">(</span><span class="nb">-</span> <span class="nv">end</span> <span class="nv">start</span><span class="p">)))</span>
+</span><span class='line'>    <span class="p">(</span><span class="k">if</span> <span class="p">(</span><span class="nb">zerop</span> <span class="nv">range</span><span class="p">)</span>
+</span><span class='line'>  <span class="p">(</span><span class="k">if</span> <span class="p">(</span><span class="nb">eql</span> <span class="nv">obj</span> <span class="p">(</span><span class="nb">aref</span> <span class="nv">vec</span> <span class="nv">start</span><span class="p">))</span>
+</span><span class='line'>      <span class="nv">obj</span>
+</span><span class='line'>      <span class="no">nil</span><span class="p">)</span>
+</span><span class='line'>  <span class="p">(</span><span class="k">let</span> <span class="p">((</span><span class="nv">mid</span> <span class="p">(</span><span class="nb">+</span> <span class="nv">start</span> <span class="p">(</span><span class="nb">round</span> <span class="p">(</span><span class="nb">/</span> <span class="nv">range</span> <span class="mi">2</span><span class="p">)))))</span>
+</span><span class='line'>    <span class="p">(</span><span class="k">let</span> <span class="p">((</span><span class="nv">obj2</span> <span class="p">(</span><span class="nb">aref</span> <span class="nv">vec</span> <span class="nv">mid</span><span class="p">)))</span>
+</span><span class='line'>      <span class="p">(</span><span class="k">if</span> <span class="p">(</span><span class="nb">&lt;</span> <span class="nv">obj</span> <span class="nv">obj2</span><span class="p">)</span>
+</span><span class='line'>      <span class="p">(</span><span class="nv">finder</span> <span class="nv">obj</span> <span class="nv">vec</span> <span class="nv">start</span> <span class="p">(</span><span class="nb">-</span> <span class="nv">mid</span> <span class="mi">1</span><span class="p">))</span>
+</span><span class='line'>      <span class="p">(</span><span class="k">if</span> <span class="p">(</span><span class="nb">&gt;</span> <span class="nv">obj</span> <span class="nv">obj2</span><span class="p">)</span>
+</span><span class='line'>          <span class="p">(</span><span class="nv">finder</span> <span class="nv">obj</span> <span class="nv">vec</span> <span class="p">(</span><span class="nb">+</span> <span class="nv">mid</span> <span class="mi">1</span><span class="p">)</span> <span class="nv">end</span><span class="p">)</span>
+</span><span class='line'>          <span class="nv">obj</span><span class="p">)))))))</span>
+</span><span class='line'>
+</span><span class='line'><span class="p">(</span><span class="nv">bin-search</span> <span class="mi">3</span> <span class="o">#(</span><span class="mi">0</span> <span class="mi">1</span> <span class="mi">2</span> <span class="mi">3</span> <span class="mi">4</span> <span class="mi">5</span> <span class="mi">6</span> <span class="mi">7</span> <span class="mi">9</span> <span class="mi">10</span> <span class="mi">11</span> <span class="mi">12</span> <span class="mi">13</span> <span class="mi">14</span> <span class="mi">15</span> <span class="mi">16</span> <span class="mi">17</span> <span class="mi">18</span> <span class="mi">19</span> <span class="mi">20</span><span class="p">))</span>
+</span><span class='line'><span class="c1">;; #(0 1 2 3 4 5 6 7 9 10 11 12 13 14 15 16 17 18 19 20)</span>
+</span><span class='line'><span class="c1">;; #(12 13 14 15 16 17 18 19 20)</span>
+</span><span class='line'><span class="c1">;; #(12 13 14 15)</span>
+</span><span class='line'><span class="c1">;; #(12 13)</span>
+</span><span class='line'><span class="c1">;; #(13)</span>
+</span><span class='line'><span class="c1">;; 13</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<h2>结构structures</h2>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+</pre></td><td class='code'><pre><code class='cl'><span class='line'><span class="p">(</span><span class="nb">defstruct</span> <span class="nv">point</span> <span class="nv">x</span> <span class="nv">y</span><span class="p">)</span>
+</span><span class='line'><span class="p">(</span><span class="nb">setf</span> <span class="nv">a-point</span> <span class="p">(</span><span class="nv">make-point</span> <span class="ss">:x</span> <span class="mi">1</span> <span class="ss">:y</span> <span class="mi">2</span><span class="p">))</span>
+</span><span class='line'><span class="p">(</span><span class="nv">point-x</span> <span class="nv">a-point</span><span class="p">)</span>
+</span><span class='line'><span class="p">(</span><span class="nv">point-y</span> <span class="nv">a-point</span><span class="p">)</span>
+</span><span class='line'><span class="p">(</span><span class="nv">point-p</span> <span class="nv">a-point</span><span class="p">)</span>
+</span><span class='line'><span class="p">(</span><span class="nb">typep</span> <span class="nv">a-point</span> <span class="ss">&#39;point</span><span class="p">)</span>
+</span><span class='line'>
+</span><span class='line'><span class="p">(</span><span class="nb">defstruct</span> <span class="nv">polemic</span>
+</span><span class='line'>  <span class="p">(</span><span class="k">type</span> <span class="p">(</span><span class="k">progn</span>
+</span><span class='line'>    <span class="p">(</span><span class="nb">format</span> <span class="no">t</span> <span class="s">&quot;What kind of polemic was it? &quot;</span><span class="p">)</span>
+</span><span class='line'>    <span class="p">(</span><span class="nb">read</span><span class="p">)))</span>
+</span><span class='line'>  <span class="p">(</span><span class="nv">effect</span> <span class="no">nil</span><span class="p">))</span>
+</span><span class='line'><span class="p">(</span><span class="nv">make-polemic</span><span class="p">)</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<h2>哈希表hash table</h2>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+</pre></td><td class='code'><pre><code class='cl'><span class='line'><span class="p">(</span><span class="nb">setf</span> <span class="nv">a-ht</span> <span class="p">(</span><span class="nb">make-hash-table</span><span class="p">))</span>
+</span><span class='line'><span class="p">(</span><span class="nb">gethash</span> <span class="ss">&#39;color</span> <span class="nv">a-ht</span><span class="p">)</span>
+</span><span class='line'><span class="p">(</span><span class="nb">setf</span> <span class="p">(</span><span class="nb">gethash</span> <span class="ss">&#39;color</span> <span class="nv">a-ht</span><span class="p">)</span> <span class="ss">&#39;red</span><span class="p">)</span>
+</span><span class='line'><span class="p">(</span><span class="nb">remhash</span> <span class="ss">&#39;color</span> <span class="nv">a-ht</span><span class="p">)</span>
+</span><span class='line'><span class="p">(</span><span class="nb">maphash</span> <span class="nf">#&#39;</span><span class="p">(</span><span class="k">lambda</span> <span class="p">(</span><span class="nv">k</span> <span class="nv">v</span><span class="p">)</span>
+</span><span class='line'>       <span class="p">(</span><span class="nb">format</span> <span class="no">t</span> <span class="s">&quot;~A = ~A~%&quot;</span> <span class="nv">k</span> <span class="nv">v</span><span class="p">))</span>
+</span><span class='line'>   <span class="nv">a-ht</span><span class="p">)</span>
+</span></code></pre></td></tr></table></div></figure>
+
+</div>
+  
+  
+
+
+    </article>
   
   
     <article>
@@ -206,6 +879,14 @@ if表达式会首先对predicate求值,根据结果确定要求值的表达式,�
     <section>
   <h1>Recent Posts</h1>
   <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/2012/12/30/common-lisp-kong-zhi-liu/">Common Lisp 控制流</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2012/12/29/common-lisp-ji-chu-shu-ju-jie-gou/">Common Lisp 基础数据结构</a>
+      </li>
     
       <li class="post">
         <a href="/blog/2012/12/29/ying-yong-xu-he-zheng-ze-xu/">应用序和正则序</a>
