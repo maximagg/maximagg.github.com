@@ -4,7 +4,7 @@
   <title><![CDATA[Category: Common Lisp | 西瓜熊]]></title>
   <link href="http://maximagg.github.com/blog/categories/common-lisp/atom.xml" rel="self"/>
   <link href="http://maximagg.github.com/"/>
-  <updated>2012-12-31T22:29:35+00:00</updated>
+  <updated>2013-01-06T20:23:15+00:00</updated>
   <id>http://maximagg.github.com/</id>
   <author>
     <name><![CDATA[西瓜熊]]></name>
@@ -12,6 +12,159 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[Common lisp 光线追踪]]></title>
+    <link href="http://maximagg.github.com/blog/2012/12/30/common-lisp-guang-xian-zhui-zong/"/>
+    <updated>2012-12-30T16:36:00+00:00</updated>
+    <id>http://maximagg.github.com/blog/2012/12/30/common-lisp-guang-xian-zhui-zong</id>
+    <content type="html"><![CDATA[<p><img src="/images/blog/cl-ray-tracing.png" title="ray-tracing" alt="Alt text" />
+```cl
+(defun sq (x) (* x x))
+(defun mag (x y z)
+  (sqrt (+ (sq x) (sq y) (sq z))))
+(defun unit-vector (x y z)
+  (let ((d (mag x y z)))</p>
+
+<pre><code>(values (/ x d) (/ y d) (/ z d))))
+</code></pre>
+
+<p>(defstruct (point (:conc-name nil)) x y z)
+(defun distance (p1 p2)
+  (mag (- (x p1) (x p2))</p>
+
+<pre><code>   (- (y p1) (y p2))
+   (- (z p1) (z p2))))
+</code></pre>
+
+<p>(defun minroot (a b c)
+  (if (zerop a)</p>
+
+<pre><code>  (/ (- c) b)
+  (let ((disc (- (sq b) (* 4 a c))))
+(unless (minusp disc)
+  (let ((discrt (sqrt disc)))
+    (min (/ (+ (- b) discrt) (* 2 a))
+     (/ (- (- b) discrt) (* 2 a))))))))
+</code></pre>
+
+<p>(defstruct surface color)
+(defparameter <em>world</em> nil)
+(defconstant eye (make-point :x 0 :y 0 :z 200))
+(defun tracer (pathname &amp;optional (res 1))
+  (with-open-file (p pathname :direction :output)</p>
+
+<pre><code>(format p "P2 ~A ~A 255" (* res 100) (* res 100))
+(let ((inc (/ res)))
+  (do ((y -50 (+ y inc)))
+  ((&lt; (- 50 y) inc))
+(do ((x -50 (+ x inc)))
+    ((&lt; (- 50 x) inc))
+  (print (color-at x y ) p))))))
+</code></pre>
+
+<p>(defun color-at (x y)
+  (multiple-value-bind (xr yr zr)</p>
+
+<pre><code>  (unit-vector (- x (x eye))
+       (- y (y eye))
+       (- 0 (z eye)))
+(round (* (sendray eye xr yr zr) 255))))
+</code></pre>
+
+<p>(defun sendray (pt xr yr zr)
+  (multiple-value-bind (s int)</p>
+
+<pre><code>  (first-hit pt xr yr zr)
+(if s
+(* (lambert s int xr yr zr) (surface-color s))
+0)))
+</code></pre>
+
+<p>(defun first-hit (pt xr yr zr)
+  (let (surface hit dist)</p>
+
+<pre><code>(dolist (s *world*)
+  (let ((h (intersect s pt xr yr zr)))
+(when h
+  (let ((d (distance h pt)))
+    (when (or (null dist) (&lt; d dist))
+      (setf surface s hit h dist d))))))
+(values surface hit)))
+</code></pre>
+
+<p>(defun lambert (s int xr yr zr)
+  (multiple-value-bind (xn yn zn) (normal s int)</p>
+
+<pre><code>(max 0 (+ (* xr xn) (* yr yn) (* zr zn)))))
+</code></pre>
+
+<p>(defstruct (sphere (:incude surface))
+  radius center)
+(defun defsphere (x y z r c)
+  (let ((s (make-sphere</p>
+
+<pre><code>    :radius r
+    :center (make-point :x x :y y :z z)
+    :color c)))
+(push s *world*)
+s))
+</code></pre>
+
+<p>(defun intersect (s pt xr yr zr)
+  (funcall (typecase s (sphere #'sphere-intersect))</p>
+
+<pre><code>   s pt xr yr zr))
+</code></pre>
+
+<p>(defun sphere-intersect (s pt xr yr zr)
+  (let* ((c (shpere-center s))</p>
+
+<pre><code> (n (minroot (+ (sq xr) (sq yr) (sq zr))
+         (* 2 (+ (* (- (x pt) (x c)) xr)
+             (* (- (y pt) (y c)) yr)
+             (* (- (z pt) (z c)) zr)))
+         (+ (sq (- (x pt) (x c)))
+        (sq (- (y pt) (y c)))
+        (sq (- (z pt) (z c)))
+        (- (sq (sphere-radius s)))))))
+(if n
+(make-point :x (+ (x pt) (* n xr))
+        :y (+ (y pt) (* n yr))
+        :z (+ (z pt) (* n zr))))))
+</code></pre>
+
+<p>(defun normal (s pt)
+  (funcall (typecase s (sphere-normal))</p>
+
+<pre><code>   s pt))
+</code></pre>
+
+<p>(defun sphere-normal (s pt)
+  (let ((c (sphere-center s)))</p>
+
+<pre><code>(unit-vector (- (x c) (x pt))
+     (- (y c) (y pt))
+     (- (z c) (z pt)))))
+</code></pre>
+
+<p>(defun ray-test (&amp;optional (res 1))
+  (setf <em>world</em> nil)
+  (defsphere 0 -300 -1200 200 .8)
+  (defsphere -80 -150 -1200 200 .7)
+  (defsphere 70 -100 -1200 200 .9)
+  (do ((x -2 (1+ x)))</p>
+
+<pre><code>  ((&gt; x 2))
+(do ((z 2 (1+ z)))
+    ((&gt; z 7))
+  (defsphere (* x 200) 300 (* z -400) 40 .75)))
+</code></pre>
+
+<p>  (tracer (make-pathname :name "spheres.pgm") res))
+```</p>
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[Common Lisp 控制流]]></title>
